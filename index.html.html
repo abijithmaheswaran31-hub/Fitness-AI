@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abi's Fitness Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #e8e4de;
+    --text: #1a1916;
+    --text-soft: #7a776f;
+    --accent: #2d5a3d;
+    --accent2: #e86c3a;
+    --accent3: #d4a843;
+    --run: #2d5a3d;
+    --gym: #1a3a5c;
+    --diet: #7a3d5a;
+    --radius: 16px;
+    --shadow: 0 2px 20px rgba(26,25,22,0.06);
+    --shadow-lg: 0 8px 40px rgba(26,25,22,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Epilogue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 0;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+    overflow-y: auto;
+  }
+
+  .logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .logo h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  .logo p { font-size: 11px; color: var(--text-soft); margin-top: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  .nav-group { padding: 0 12px; margin-bottom: 8px; }
+  .nav-label { font-size: 10px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 1px; padding: 0 12px 8px; }
+  .nav-btn {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 10px 12px;
+    background: none; border: none; cursor: pointer;
+    border-radius: 10px; color: var(--text-soft);
+    font-family: 'Epilogue', sans-serif; font-size: 13.5px; font-weight: 500;
+    transition: all 0.15s;
+    text-align: left;
+  }
+  .nav-btn:hover { background: var(--surface2); color: var(--text); }
+  .nav-btn.active { background: var(--accent); color: #fff; }
+  .nav-btn .icon { width: 18px; text-align: center; font-size: 15px; }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+  }
+  .streak-pill {
+    background: linear-gradient(135deg, #fff8e8, #fff3d4);
+    border: 1px solid #e8d5a0;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .streak-pill .fire { font-size: 22px; }
+  .streak-pill .count { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--accent2); }
+  .streak-pill .label { font-size: 11px; color: var(--text-soft); }
+
+  .main { margin-left: 220px; padding: 32px; flex: 1; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-header h2 { font-family: 'DM Serif Display', serif; font-size: 30px; letter-spacing: -0.5px; }
+  .page-header p { color: var(--text-soft); margin-top: 4px; font-size: 13px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card-title { font-weight: 600; font-size: 11px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; font-family: 'Epilogue', sans-serif; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+  }
+  .stat-label { font-size: 11px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .stat-value { font-family: 'DM Serif Display', serif; font-size: 28px; line-height: 1; }
+
+  .progress-bar { height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .tag-run { background: #e8f2ec; color: var(--run); }
+  .tag-gym { background: #e8eef5; color: var(--gym); }
+  .tag-diet { background: #f5e8ef; color: var(--diet); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: none; cursor: pointer;
+    font-family: 'Epilogue', sans-serif; font-size: 13px; font-weight: 600;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #244d33; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm { padding: 7px 14px; font-size: 12px; }
+  .btn-delete { background: #ffebee; color: #c62828; }
+  .btn-delete:hover { background: #ffcdd2; }
+
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--text-soft); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    font-family: 'Epilogue', sans-serif;
+    font-size: 13.5px;
+    color: var(--text);
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); background: #fff; }
+  .form-row { margin-bottom: 14px; }
+
+  .list-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .list-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .list-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+  }
+  .list-icon-run { background: #e8f2ec; }
+  .list-icon-gym { background: #e8eef5; }
+  .list-icon-diet { background: #f5e8ef; }
+
+  .list-body { flex: 1; }
+  .list-title { font-weight: 600; font-size: 13.5px; }
+  .list-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin: 20px 0;
+  }
+  .cal-day-label { text-align: center; font-size: 11px; font-weight: 600; color: var(--text-soft); padding: 8px 0; text-transform: uppercase; }
+  .cal-day {
+    aspect-ratio: 1;
+    min-height: 70px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    background: var(--surface);
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+  .cal-day:hover { border-color: var(--accent); transform: scale(1.05); }
+  .cal-day.empty { cursor: default; }
+  .cal-day.today { background: var(--accent); color: white; border-color: var(--accent); }
+  .cal-day.has-activity { background: #e8f2ec; color: var(--run); }
+  .cal-day.has-cheat { border: 2px dashed var(--accent2); }
+  .cal-icons { position: absolute; top: 4px; right: 4px; display: flex; gap: 2px; font-size: 16px; }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--text);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  .toast.show { opacity: 1; }
+
+  .photo-upload {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .photo-upload:hover { border-color: var(--accent); background: var(--surface2); }
+  .photo-upload img { max-width: 100%; max-height: 200px; border-radius: 8px; margin-bottom: 12px; }
+  .photo-upload-text { color: var(--text-soft); font-size: 12px; }
+
+  .donut { width: 120px; height: 120px; margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="logo">
+      <h1>Abi's</h1>
+      <p>Fitness Tracker</p>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Main</div>
+      <button class="nav-btn active" onclick="navigate('dashboard')"><span class="icon">📊</span>Dashboard</button>
+      <button class="nav-btn" onclick="navigate('runs')"><span class="icon">🏃</span>Runs</button>
+      <button class="nav-btn" onclick="navigate('gym')"><span class="icon">🏋️</span>Gym Log</button>
+      <button class="nav-btn" onclick="navigate('diet')"><span class="icon">🥗</span>Diet</button>
+      <button class="nav-btn" onclick="navigate('planner')"><span class="icon">📅</span>Planner</button>
+      <button class="nav-btn" onclick="navigate('records')"><span class="icon">🏆</span>Records</button>
+      <button class="nav-btn" onclick="navigate('profile')"><span class="icon">⚙️</span>Profile</button>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="streak-pill">
+        <div class="fire">🔥</div>
+        <div class="count" id="sidebarStreak">0</div>
+        <div class="label" id="streakLabel">days</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h2 id="greeting">Good evening 👋</h2>
+        <p>Here's your weekly snapshot</p>
+      </div>
+
+      <div class="grid-4">
+        <div class="stat-card">
+          <div class="stat-label">🔥 STREAK</div>
+          <div class="stat-value" id="dashStreak">0</div>
+          <div style="font-size:12px;color:var(--text-soft);margin-top:4px" id="streakText">days</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">💪 THIS WEEK'S SESSIONS</div>
+          <div style="display:flex;justify-content:space-around;margin-top:12px">
+            <div style="text-align:center">
+              <div class="stat-value" id="weekGym" style="font-size:24px">0</div>
+              <div style="font-size:11px;color:var(--text-soft);margin-top:4px">Gym</div>
+            </div>
+            <div style="text-align:center">
+              <div class="stat-value" id="weekRuns" style="font-size:24px">0</div>
+              <div style="font-size:11px;color:var(--text-soft);margin-top:4px">Runs</div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">📊 TODAY'S CALORIES</div>
+          <div class="stat-value" id="calToday" style="color:#7a3d5a">0</div>
+          <div style="font-size:11px;color:var(--text-soft);margin-top:4px">/ 2518</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">🏃 BEST RUNNING TIMES</div>
+          <div id="bestTimes" style="font-size:12px;margin-top:8px;line-height:1.8;color:var(--text-soft)">
+            <div>5K Time: —</div>
+            <div style="margin-top:4px">10K Time: —</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">DAILY CALORIE PROGRESS</div>
+          <div style="display:flex;align-items:center;justify-content:center;height:180px">
+            <svg class="donut" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="50" fill="none" stroke="#e8e4de" stroke-width="20"/>
+              <circle id="donutFill" cx="60" cy="60" r="50" fill="none" stroke="#7a3d5a" stroke-width="20" stroke-dasharray="0 314" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+            </svg>
+          </div>
+          <div style="text-align:center;margin-top:12px">
+            <div style="font-size:12px;color:var(--text-soft)">0 consumed</div>
+            <div style="font-size:12px;color:var(--text-soft);margin-top:4px">2518 remaining</div>
+            <div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--accent)">On Track 👍</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">TODAY'S MACROS</div>
+          <div style="margin-top:16px;line-height:1.8">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:16px">💚</span>
+                <span style="font-weight:600">Protein</span>
+              </div>
+              <span style="font-family:'DM Mono',monospace;font-size:12px">0g</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:16px">🌾</span>
+                <span style="font-weight:600">Carbs</span>
+              </div>
+              <span style="font-family:'DM Mono',monospace;font-size:12px">0g</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:16px">🥑</span>
+                <span style="font-weight:600">Fats</span>
+              </div>
+              <span style="font-family:'DM Mono',monospace;font-size:12px">0g</span>
+            </div>
+            <div style="margin-top:12px;padding:10px;background:#fef3e8;border-radius:8px;font-size:11px;color:var(--text-soft)">
+              <span style="font-weight:600">Fibre:</span> 0g
+              <span style="float:right;font-weight:600;color:#4a90e2">Water:</span>
+              <span style="float:right;color:#4a90e2">0.01L</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">WEEKLY STEPS COVERED</div>
+          <div style="display:flex;align-items:flex-end;height:150px;gap:6px;justify-content:space-around" id="stepsChart"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">VIEW HISTORY</div>
+          <div class="form-row">
+            <label>Select Date</label>
+            <input type="date" id="historyDateInput" value="" onchange="viewHistory()">
+          </div>
+          <div id="historyDisplay" style="font-size:12px;color:var(--text-soft);margin-top:12px;line-height:1.8">
+            <div>Select a date to view activity</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">YOUR PLANS</div>
+          <div id="dashboardPlans" style="font-size:12px;color:var(--text-soft);margin-top:12px;line-height:1.8">
+            <div>No plans for today</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RUNS -->
+    <div class="page" id="page-runs">
+      <div class="page-header">
+        <h2>Runs</h2>
+        <p>Log and track your running</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div style="font-weight:600;margin-bottom:16px;font-size:16px">Log a Run</div>
+          <div class="form-row">
+            <label>Date</label>
+            <input type="date" id="runDate">
+          </div>
+          <div class="form-row">
+            <label>Distance (km)</label>
+            <input type="number" id="runDist" placeholder="5.0" step="0.1" min="0">
+          </div>
+          <div class="form-row">
+            <label>Duration (MM:SS)</label>
+            <input type="text" id="runDur" placeholder="24:32" pattern="[0-9]{1,3}:[0-9]{2}">
+          </div>
+          <div class="form-row">
+            <label>Type</label>
+            <select id="runType">
+              <option>5K</option>
+              <option>10K</option>
+              <option>Half Marathon</option>
+              <option>Marathon</option>
+              <option>Easy Run</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="logRun()" style="width:100%">Save Run 🏃</button>
+        </div>
+
+        <div>
+          <div class="stat-card">
+            <div class="stat-label">Total Runs</div>
+            <div class="stat-value" id="totalRuns">0</div>
+          </div>
+          <div class="stat-card" style="margin-top:16px">
+            <div class="stat-label">Total Distance</div>
+            <div class="stat-value" id="totalDist">0<span style="font-size:14px"> km</span></div>
+          </div>
+          <div class="stat-card" style="margin-top:16px">
+            <div class="stat-label">Avg Pace</div>
+            <div class="stat-value" id="avgPace" style="font-size:18px">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Run History</div>
+        <div id="runHistory"></div>
+      </div>
+    </div>
+
+    <!-- GYM -->
+    <div class="page" id="page-gym">
+      <div class="page-header">
+        <h2>Gym Log</h2>
+        <p>Track your gym sessions</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div style="font-weight:600;margin-bottom:16px;font-size:16px">Log Session</div>
+          <div class="form-row">
+            <label>Date</label>
+            <input type="date" id="gymDate">
+          </div>
+          <div class="form-row">
+            <label>What I Did</label>
+            <input type="text" id="gymWhat" placeholder="e.g., Back + Triceps" maxlength="100">
+          </div>
+          <div class="form-row">
+            <label>Steps</label>
+            <input type="number" id="gymSteps" placeholder="5000" min="0">
+          </div>
+          <button class="btn btn-primary" onclick="logGym()" style="width:100%">Save Session 💪</button>
+        </div>
+
+        <div>
+          <div class="stat-card">
+            <div class="stat-label">Total Sessions</div>
+            <div class="stat-value" id="totalGym">0</div>
+          </div>
+          <div class="stat-card" style="margin-top:16px">
+            <div class="stat-label">Total Steps</div>
+            <div class="stat-value" id="totalSteps">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Session History</div>
+        <div id="gymHistory"></div>
+      </div>
+    </div>
+
+    <!-- DIET -->
+    <div class="page" id="page-diet">
+      <div class="page-header">
+        <h2>Diet Tracker</h2>
+        <p>Track meals, macros, and calories</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div style="font-weight:600;margin-bottom:16px;font-size:16px">Log a Meal</div>
+          <div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--text)">
+            <span style="font-weight:600">✨ Describe your meal naturally - AI calculates everything!</span><br>
+            e.g., 250g chicken + 15g soy sauce + 5g BBQ sauce + 5g chilli sauce
+          </div>
+          <div class="form-row">
+            <label>Meal Type</label>
+            <select id="mealType">
+              <option>Breakfast</option>
+              <option>Lunch</option>
+              <option>Dinner</option>
+              <option>Snack</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Describe Your Meal</label>
+            <textarea id="mealDescription" rows="4" placeholder="250g chicken + 150g rice..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="analyseMeal()" style="width:100%">✨ Analyse</button>
+
+          <div id="aiPreview" style="display:none;margin-top:16px;padding:16px;background:var(--surface2);border-radius:12px">
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:12px;text-align:center">
+              <div>
+                <div style="font-size:11px;color:var(--text-soft)">Calories</div>
+                <div style="font-family:'DM Serif Display',serif;font-size:20px;color:#7a3d5a;margin-top:4px" id="previewCal">0</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--text-soft)">Protein</div>
+                <div style="font-family:'DM Serif Display',serif;font-size:20px;color:#2d5a3d;margin-top:4px" id="previewProtein">0g</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--text-soft)">Carbs</div>
+                <div style="font-family:'DM Serif Display',serif;font-size:20px;color:#d4a843;margin-top:4px" id="previewCarbs">0g</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--text-soft)">Fats</div>
+                <div style="font-family:'DM Serif Display',serif;font-size:20px;color:#e86c3a;margin-top:4px" id="previewFats">0g</div>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="confirmMeal()" style="width:100%">Save Meal 🥗</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">TODAY'S SUMMARY</div>
+          <div style="margin-top:16px;line-height:1.8">
+            <div style="margin-bottom:16px">
+              <div style="font-size:11px;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase">Calories</div>
+              <div style="font-family:'DM Serif Display',serif;font-size:24px;color:#7a3d5a"><span id="sumCal">0</span> <span style="font-size:12px;font-family:'Epilogue';color:var(--text-soft)">/ 2518 kcal</span></div>
+            </div>
+            <div style="margin-bottom:12px">
+              <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;text-transform:uppercase">Protein</div>
+              <div style="font-size:12px"><span id="sumProtein">0</span>g</div>
+            </div>
+            <div style="margin-bottom:12px">
+              <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;text-transform:uppercase">Carbs</div>
+              <div style="font-size:12px"><span id="sumCarbs">0</span>g</div>
+            </div>
+            <div style="margin-bottom:12px">
+              <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;text-transform:uppercase">Fats</div>
+              <div style="font-size:12px"><span id="sumFats">0</span>g</div>
+            </div>
+            <div style="margin-bottom:12px">
+              <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;text-transform:uppercase">Fibre</div>
+              <div style="font-size:12px"><span id="sumFibre">0</span>g</div>
+            </div>
+            <div style="padding:10px;background:#e8f2ec;border-radius:8px;font-size:11px;margin-bottom:12px">
+              <span style="font-weight:600;color:var(--gym)">💧 Water Intake</span><br>
+              <span style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--gym)">0.01L</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">DAILY WATER INTAKE</div>
+        <div class="form-row">
+          <label>Add Water (Liters)</label>
+          <div style="display:flex;gap:8px">
+            <input type="number" id="waterAmount" placeholder="0.5" step="0.1" min="0" style="flex:1">
+            <button class="btn btn-primary btn-sm" onclick="addWater()">Add 💧</button>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:12px;background:var(--surface2);border-radius:8px;text-align:center">
+          <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px">TOTAL TODAY</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--gym)" id="totalWater">0.01L</div>
+          <div style="font-size:11px;color:var(--text-soft);margin-top:4px">Goal: 3.5L</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">MEAL LOG</div>
+        <div style="margin-bottom:16px">
+          <label>View Meals From</label>
+          <div style="display:flex;gap:8px">
+            <input type="date" id="mealDate" style="flex:1">
+            <button class="btn btn-primary btn-sm" onclick="viewMeals()">Load 🔍</button>
+          </div>
+        </div>
+        <div id="mealHistory"></div>
+      </div>
+    </div>
+
+    <!-- PLANNER -->
+    <div class="page" id="page-planner">
+      <div class="page-header">
+        <h2>Planner</h2>
+        <p>Plan your training calendar</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <button class="btn btn-outline btn-sm" onclick="changeMonth(-1)">← Prev</button>
+            <div style="font-family:'DM Serif Display',serif;font-size:18px" id="calMonthLabel"></div>
+            <button class="btn btn-outline btn-sm" onclick="changeMonth(1)">Next →</button>
+          </div>
+          <div class="cal-grid" id="calendarGrid"></div>
+
+          <div class="divider"></div>
+
+          <div style="margin-top:20px">
+            <div style="font-weight:600;margin-bottom:16px;font-size:16px">PLAN A DAY</div>
+            <div class="form-row">
+              <label>Date</label>
+              <input type="date" id="planDate">
+            </div>
+            <div class="form-row">
+              <label>Plan Type</label>
+              <select id="planType">
+                <option>Gym 🏋️</option>
+                <option>Run 🏃</option>
+                <option>Cheat Day 🍕</option>
+                <option>Trip ✈️</option>
+                <option>Rest 😴</option>
+                <option>Race 🏁</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>Notes</label>
+              <input type="text" id="planNotes" placeholder="Long run, leg day, recovery day...">
+            </div>
+            <button class="btn btn-primary" onclick="savePlan()" style="width:100%">Save Plan 📅</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">YOUR PLANS</div>
+          <div id="plansList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECORDS -->
+    <div class="page" id="page-records">
+      <div class="page-header">
+        <h2>Records</h2>
+        <p>Your best performances</p>
+      </div>
+
+      <div class="grid-3" id="prCards" style="margin-bottom:20px"></div>
+
+      <div class="card">
+        <div style="font-weight:600;margin-bottom:16px;font-size:16px">Add/Edit PR</div>
+        <div class="form-row">
+          <label>Record Type</label>
+          <select id="prType">
+            <option>5K Time</option>
+            <option>10K Time</option>
+            <option>Half Marathon</option>
+            <option>Marathon</option>
+            <option>Bench Press (kg)</option>
+            <option>Squat (kg)</option>
+            <option>Deadlift (kg)</option>
+            <option>Overhead Press (kg)</option>
+            <option>Custom</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Value (e.g., 22:30 or 120)</label>
+          <input type="text" id="prValue">
+        </div>
+        <div class="form-row">
+          <label>Date Achieved</label>
+          <input type="date" id="prDate">
+        </div>
+        <button class="btn btn-primary" onclick="savePR()" style="width:100%">Save PR 🏅</button>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="page" id="page-profile">
+      <div class="page-header">
+        <h2>Profile Settings</h2>
+        <p>Configure your fitness goals and targets</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div style="font-weight:600;margin-bottom:16px;font-size:16px">Personal Information</div>
+          <div class="form-row">
+            <label>Weight (kg)</label>
+            <input type="number" id="profWeight" placeholder="72.8" step="0.1" oninput="calcTDEE()">
+          </div>
+          <div class="form-row">
+            <label>Height (cm)</label>
+            <input type="number" id="profHeight" placeholder="171" step="1" oninput="calcTDEE()">
+          </div>
+          <div class="form-row">
+            <label>Age (years)</label>
+            <input type="number" id="profAge" placeholder="22" step="1" oninput="calcTDEE()">
+          </div>
+          <div class="form-row">
+            <label>Activity Level</label>
+            <select id="profActivity" oninput="calcTDEE()">
+              <option value="1.2">Sedentary (Little exercise)</option>
+              <option value="1.375">Light (1-3 days/week)</option>
+              <option value="1.55" selected>Moderate (3-5 days/week)</option>
+              <option value="1.725">Active (6-7 days/week)</option>
+              <option value="1.9">Very Active (Athlete)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Goal</label>
+            <select id="profGoal" oninput="calcTDEE()">
+              <option value="shred" selected>Shredding 🔥 (Lose fat)</option>
+              <option value="bulk">Bulking 💪 (Gain muscle)</option>
+              <option value="maint">Maintenance ⚖️ (Stay same)</option>
+            </select>
+          </div>
+
+          <div style="background:linear-gradient(135deg,#fff8e8,#fff3d4);border:1.5px solid #e8d5a0;border-radius:12px;padding:14px;margin-bottom:14px">
+            <div style="font-size:11px;color:#666;text-transform:uppercase;margin-bottom:8px;font-weight:600">📊 Calculated TDEE</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:32px;color:#d4a843;margin-bottom:4px" id="calculatedTDEE">()</div>
+            <div style="font-size:12px;color:#666;line-height:1.6" id="tdeeBreakdown">Enter your details to calculate</div>
+          </div>
+
+          <div class="form-row">
+            <label>Daily Calorie Target (TDEE)</label>
+            <input type="number" id="profCal" placeholder="2518" step="50" min="1000">
+            <div style="font-size:11px;color:var(--text-soft);margin-top:6px">💡 Use calculated value or adjust manually</div>
+          </div>
+          <div class="form-row">
+            <label>Max Calories on Cheat Day</label>
+            <input type="number" id="profCheatCal" placeholder="3200" step="50" min="1000" value="3200">
+            <div style="font-size:11px;color:var(--text-soft);margin-top:6px">Going above this will reset your streak</div>
+          </div>
+          <div class="form-row">
+            <label>Max Calories on Diet Days</label>
+            <input type="number" id="profDietCal" placeholder="2518" step="50" min="1000" value="2518">
+            <div style="font-size:11px;color:var(--text-soft);margin-top:6px">Going above this will reset your streak</div>
+          </div>
+
+          <button class="btn btn-primary" onclick="saveProfile()" style="width:100%;margin-top:12px">Save Profile ✅</button>
+        </div>
+
+        <div>
+          <div class="card">
+            <div style="font-weight:600;margin-bottom:16px;font-size:16px">Goal Description & Progress</div>
+            <div class="form-row">
+              <label>Describe Your Goal</label>
+              <textarea id="profileGoalDesc" rows="3" placeholder="e.g., I want to lose 10kg and get more defined abs..."></textarea>
+            </div>
+            <div class="form-row">
+              <label>Current Body Photo</label>
+              <div class="photo-upload" onclick="document.getElementById('currentPhotoInput').click()">
+                <div id="currentPhotoPreview" style="display:none">
+                  <img id="currentPhoto" src="" alt="Current">
+                </div>
+                <div class="photo-upload-text" id="currentPhotoText">📸 Click to upload current body photo</div>
+              </div>
+              <input type="file" id="currentPhotoInput" accept="image/*" onchange="handlePhotoUpload(this, 'current')" style="display:none">
+            </div>
+            <div class="form-row">
+              <label>Desired Body Photo / Reference</label>
+              <div class="photo-upload" onclick="document.getElementById('desiredPhotoInput').click()">
+                <div id="desiredPhotoPreview" style="display:none">
+                  <img id="desiredPhoto" src="" alt="Desired">
+                </div>
+                <div class="photo-upload-text" id="desiredPhotoText">🎯 Click to upload desired/reference photo</div>
+              </div>
+              <input type="file" id="desiredPhotoInput" accept="image/*" onchange="handlePhotoUpload(this, 'desired')" style="display:none">
+            </div>
+            <button class="btn btn-primary" onclick="analyzeBodyComposition()" style="width:100%;margin-top:12px">🔍 Analyze Body Composition</button>
+            <div id="bodyAnalysisResult" style="display:none;margin-top:12px;padding:12px;background:var(--surface2);border-radius:8px;font-size:12px"></div>
+          </div>
+
+          <div class="card">
+            <div style="font-weight:600;margin-bottom:16px;font-size:16px">🔑 API Key Setup</div>
+            <div style="font-size:12px;color:var(--text);background:#fff8e8;border:1px solid #e8d5a0;border-radius:8px;padding:12px;margin-bottom:16px;line-height:1.6">
+              <strong>Get your API key:</strong><br>
+              1. Go to: console.anthropic.com<br>
+              2. Sign up or Login<br>
+              3. Click "API Keys"<br>
+              4. Click "Create Key"<br>
+              5. Copy key (starts with sk-ant-)
+            </div>
+            <div class="form-row">
+              <label>Anthropic API Key</label>
+              <input type="password" id="apiKey" placeholder="sk-ant-..." style="font-family:monospace;font-size:12px">
+            </div>
+            <button class="btn btn-primary" onclick="saveAPIKey()" style="width:100%">Save Key 🔐</button>
+            <div style="margin-top:12px;padding:12px;background:#e8f2ec;border-radius:8px;text-align:center;font-size:11px;color:#2d5a3d">
+              ✅ Stored securely in your browser only
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="divider" style="display:none"></div>
+
+<script>
+// DATA
+let data = {
+  runs: [], gym: [], meals: [], prs: [], plans: [],
+  water: [], cheatDays: [], streak: 0, lastStreakDate: null,
+  profile: {}, photos: {}
+};
+
+const prEmojis = {'5K Time':'🏃','10K Time':'🏃','Half Marathon':'🏅','Marathon':'🏅','Bench Press (kg)':'🏋️','Squat (kg)':'🏋️','Deadlift (kg)':'💪','Overhead Press (kg)':'🔧','Custom':'⭐'};
+
+// INIT
+function init() {
+  const now = new Date();
+  const h = now.getHours();
+  document.getElementById('greeting').textContent = h < 12 ? 'Good morning 👋' : h < 17 ? 'Good afternoon 👋' : 'Good evening 👋';
+  
+  const today = now.toISOString().split('T')[0];
+  ['runDate','gymDate','mealDate','planDate','prDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = today;
+  });
+  document.getElementById('historyDateInput').value = today;
+
+  load();
+  calcTDEE();
+  calculateStreak();
+  renderDashboard();
+  renderRunStats();
+  renderGymStats();
+  renderDietStats();
+  renderCalendar();
+  renderPRs();
+  renderPlansList();
+  updateCheatDayStatus();
+}
+
+// NAVIGATE
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    if(b.textContent.toLowerCase().includes(page)) b.classList.add('active');
+  });
+}
+
+// STREAK LOGIC - CORRECT
+function calculateStreak() {
+  const today = new Date().toISOString().split('T')[0];
+  const todayMeals = data.meals.filter(m => m.date === today);
+  const todayCalories = todayMeals.reduce((s, m) => s + m.cal, 0);
+  const isCheatDay = data.cheatDays.includes(today);
+  const limit = isCheatDay ? (data.profile.cheatCalLimit || 3200) : (data.profile.calTarget || 2518);
+  
+  const hasExercise = data.runs.some(r => r.date === today) || data.gym.some(g => g.date === today);
+  const hasMeals = todayMeals.length > 0;
+  const withinLimit = todayCalories <= limit;
+  
+  // RULE: Exceeded limit → reset
+  if(hasMeals && !withinLimit) {
+    data.streak = 0;
+    data.lastStreakDate = null;
+    return;
+  }
+  
+  // RULE: Complete day → increment
+  if(hasExercise && hasMeals && withinLimit) {
+    if(data.lastStreakDate !== today) {
+      data.streak++;
+      data.lastStreakDate = today;
+    }
+    return;
+  }
+}
+
+// TOAST
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// STORAGE
+function save() { localStorage.setItem('fitnessData', JSON.stringify(data)); }
+function load() {
+  const stored = localStorage.getItem('fitnessData');
+  if(stored) data = JSON.parse(stored);
+}
+
+// DASHBOARD
+function renderDashboard() {
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Streak
+  document.getElementById('dashStreak').textContent = data.streak;
+  document.getElementById('sidebarStreak').textContent = data.streak;
+  document.getElementById('streakLabel').textContent = data.streak === 1 ? 'day' : 'days';
+  document.getElementById('streakText').textContent = data.streak === 1 ? 'day' : 'days';
+  
+  // This week
+  const weekDays = Array.from({length: 7}, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    return d.toISOString().split('T')[0];
+  });
+  document.getElementById('weekGym').textContent = data.gym.filter(g => weekDays.includes(g.date)).length;
+  document.getElementById('weekRuns').textContent = data.runs.filter(r => weekDays.includes(r.date)).length;
+  
+  // Calories
+  const todayMeals = data.meals.filter(m => m.date === today);
+  const cal = todayMeals.reduce((s, m) => s + m.cal, 0);
+  const limit = data.profile.calTarget || 2518;
+  document.getElementById('calToday').textContent = cal;
+  const percent = Math.min(cal / limit * 314, 314);
+  document.getElementById('donutFill').setAttribute('stroke-dasharray', percent + ' 314');
+  
+  // Best times
+  const running = data.prs.filter(p => p.name.includes('K') || p.name.includes('Marathon'));
+  if(running.length) {
+    document.getElementById('bestTimes').innerHTML = running.slice(0, 2).map(p => 
+      `<div><strong>${p.name}:</strong> ${p.value}</div>`
+    ).join('');
+  }
+  
+  // Steps chart
+  const stepData = weekDays.map(d => {
+    const steps = data.gym.filter(g => g.date === d).reduce((s, g) => s + (g.steps || 0), 0);
+    return steps;
+  }).reverse();
+  const maxSteps = Math.max(...stepData, 5000);
+  document.getElementById('stepsChart').innerHTML = stepData.map((steps, i) => `
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+      <div style="width:100%;background:var(--run);border-radius:4px 4px 0 0;height:${Math.max(steps / maxSteps * 120, 4)}px"></div>
+      <div style="font-size:10px;color:var(--text-soft);margin-top:4px">${['Sun','Sat','Fri','Thu','Wed','Tue','Mon'][i]}</div>
+    </div>
+  `).join('');
+
+  // Summary
+  const totals = todayMeals.reduce((s, m) => ({cal: s.cal + m.cal, protein: s.protein + m.protein, carbs: s.carbs + m.carbs, fats: s.fats + m.fats, fibre: s.fibre + m.fibre}), {cal:0, protein:0, carbs:0, fats:0, fibre:0});
+  document.getElementById('sumCal').textContent = totals.cal;
+  document.getElementById('sumProtein').textContent = totals.protein;
+  document.getElementById('sumCarbs').textContent = totals.carbs;
+  document.getElementById('sumFats').textContent = totals.fats;
+  document.getElementById('sumFibre').textContent = totals.fibre;
+  
+  // Plans
+  const planEmojis = {'Gym': '🏋️', 'Run': '🏃', 'Cheat Day': '🍕', 'Trip': '✈️', 'Rest': '😴', 'Race': '🏁'};
+  const todayPlans = data.plans.filter(p => p.date === today);
+  if(todayPlans.length) {
+    document.getElementById('dashboardPlans').innerHTML = todayPlans.map(p => `
+      <div style="margin-bottom:8px">${planEmojis[p.type] || '📅'} <strong>${p.type}:</strong> ${p.notes || 'No notes'}</div>
+    `).join('');
+  }
+}
+
+function viewHistory() {
+  const date = document.getElementById('historyDateInput').value;
+  if(!date) return;
+  
+  // Update dashboard to show data for selected date
+  const selectedMeals = data.meals.filter(m => m.date === date);
+  const selectedRuns = data.runs.filter(r => r.date === date);
+  const selectedGyms = data.gym.filter(g => g.date === date);
+  const selectedWater = data.water.filter(w => w.date === date).reduce((s, w) => s + w.liters, 0);
+  
+  // Update calories display
+  const cal = selectedMeals.reduce((s, m) => s + m.cal, 0);
+  const limit = data.profile.calTarget || 2518;
+  document.getElementById('calToday').textContent = cal;
+  const percent = Math.min(cal / limit * 314, 314);
+  document.getElementById('donutFill').setAttribute('stroke-dasharray', percent + ' 314');
+  
+  // Update macros
+  const totals = selectedMeals.reduce((s, m) => ({cal: s.cal + m.cal, protein: s.protein + m.protein, carbs: s.carbs + m.carbs, fats: s.fats + m.fats, fibre: s.fibre + m.fibre}), {cal:0, protein:0, carbs:0, fats:0, fibre:0});
+  document.getElementById('sumCal').textContent = totals.cal;
+  document.getElementById('sumProtein').textContent = totals.protein;
+  document.getElementById('sumCarbs').textContent = totals.carbs;
+  document.getElementById('sumFats').textContent = totals.fats;
+  document.getElementById('sumFibre').textContent = totals.fibre;
+  
+  // Update water
+  document.getElementById('totalWater').textContent = selectedWater.toFixed(2) + 'L';
+  
+  // Update this week (show selected week)
+  const selectedDate = new Date(date);
+  const weekStart = new Date(selectedDate);
+  weekStart.setDate(selectedDate.getDate() - selectedDate.getDay());
+  const weekDays = Array.from({length: 7}, (_, i) => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    return d.toISOString().split('T')[0];
+  });
+  document.getElementById('weekGym').textContent = data.gym.filter(g => weekDays.includes(g.date)).length;
+  document.getElementById('weekRuns').textContent = data.runs.filter(r => weekDays.includes(r.date)).length;
+  
+  // History summary
+  let html = `<strong style="color:var(--accent)">${new Date(date).toLocaleDateString()}</strong><br>`;
+  if(selectedMeals.length) {
+    html += `🥗 <strong>Meals:</strong> ${cal} kcal (${selectedMeals.length})<br>`;
+  }
+  if(selectedRuns.length) {
+    const km = selectedRuns.reduce((s, r) => s + r.dist, 0);
+    html += `🏃 <strong>Runs:</strong> ${km.toFixed(1)}km (${selectedRuns.length})<br>`;
+  }
+  if(selectedGyms.length) {
+    const steps = selectedGyms.reduce((s, g) => s + (g.steps || 0), 0);
+    html += `🏋️ <strong>Gym:</strong> ${steps} steps (${selectedGyms.length})<br>`;
+  }
+  if(selectedWater > 0) html += `💧 <strong>Water:</strong> ${selectedWater.toFixed(1)}L<br>`;
+  
+  if(!selectedMeals.length && !selectedRuns.length && !selectedGyms.length && !selectedWater) {
+    html = '<span style="color:var(--text-soft)">No activity on this date</span>';
+  }
+  
+  document.getElementById('historyDisplay').innerHTML = html;
+}
+
+// RUNS
+function logRun() {
+  const date = document.getElementById('runDate').value;
+  const dist = parseFloat(document.getElementById('runDist').value);
+  const durStr = document.getElementById('runDur').value;
+  const type = document.getElementById('runType').value;
+  
+  if(!date || !dist || !durStr) { toast('Fill all fields'); return; }
+  
+  // Parse MM:SS to minutes
+  const parts = durStr.split(':');
+  if(parts.length !== 2) { toast('Duration format: MM:SS'); return; }
+  const dur = parseInt(parts[0]) + parseInt(parts[1]) / 60;
+  
+  data.runs.push({ id: Date.now(), date, dist, dur, durStr, type });
+  save(); calculateStreak(); toast('Run logged! 🏃');
+  
+  document.getElementById('runDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('runDist').value = '';
+  document.getElementById('runDur').value = '';
+  
+  renderRunStats();
+  renderDashboard();
+}
+
+function renderRunStats() {
+  const totalRuns = data.runs.length;
+  const totalDist = data.runs.reduce((s, r) => s + r.dist, 0);
+  const paces = data.runs.filter(r => r.dist && r.dur).map(r => r.dur / r.dist);
+  const avgPace = paces.length ? (paces.reduce((a,b)=>a+b) / paces.length).toFixed(1) : '—';
+  
+  document.getElementById('totalRuns').textContent = totalRuns;
+  document.getElementById('totalDist').textContent = totalDist.toFixed(1);
+  document.getElementById('avgPace').textContent = avgPace === '—' ? '—' : avgPace + ' min/km';
+  
+  const html = [...data.runs].reverse().map(r => `
+    <div class="list-item">
+      <div class="list-icon list-icon-run">🏃</div>
+      <div class="list-body">
+        <div class="list-title">${r.type} <span class="tag tag-run">Run</span></div>
+        <div class="list-sub">${r.dist}km · ${r.durStr}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm" onclick="editRun(${r.id})">Edit</button>
+        <button class="btn btn-delete btn-sm" onclick="deleteRun(${r.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('runHistory').innerHTML = html || '<div style="color:var(--text-soft);text-align:center;padding:20px 0">No runs logged</div>';
+}
+
+function editRun(id) {
+  const run = data.runs.find(r => r.id === id);
+  if(!run) return;
+  document.getElementById('runDate').value = run.date;
+  document.getElementById('runDist').value = run.dist;
+  document.getElementById('runDur').value = run.durStr;
+  document.getElementById('runType').value = run.type;
+  data.runs = data.runs.filter(r => r.id !== id);
+  save();
+  toast('Editing run...');
+}
+
+function deleteRun(id) {
+  if(!confirm('Delete?')) return;
+  data.runs = data.runs.filter(r => r.id !== id);
+  save(); calculateStreak(); toast('Deleted');
+  renderRunStats();
+  renderDashboard();
+}
+
+// GYM
+function logGym() {
+  const date = document.getElementById('gymDate').value;
+  const what = document.getElementById('gymWhat').value;
+  const steps = parseInt(document.getElementById('gymSteps').value) || 0;
+  
+  if(!date || !what) { toast('Fill all fields'); return; }
+  
+  data.gym.push({ id: Date.now(), date, what, steps });
+  save(); calculateStreak(); toast('Session logged! 💪');
+  
+  document.getElementById('gymDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('gymWhat').value = '';
+  document.getElementById('gymSteps').value = '';
+  
+  renderGymStats();
+  renderDashboard();
+}
+
+function renderGymStats() {
+  const totalGym = data.gym.length;
+  const totalSteps = data.gym.reduce((s, g) => s + (g.steps || 0), 0);
+  
+  document.getElementById('totalGym').textContent = totalGym;
+  document.getElementById('totalSteps').textContent = totalSteps;
+  
+  const html = [...data.gym].reverse().map(g => `
+    <div class="list-item">
+      <div class="list-icon list-icon-gym">🏋️</div>
+      <div class="list-body">
+        <div class="list-title">${g.what} <span class="tag tag-gym">Gym</span></div>
+        <div class="list-sub">${g.steps} steps</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm" onclick="editGym(${g.id})">Edit</button>
+        <button class="btn btn-delete btn-sm" onclick="deleteGym(${g.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('gymHistory').innerHTML = html || '<div style="color:var(--text-soft);text-align:center;padding:20px 0">No sessions logged</div>';
+}
+
+function editGym(id) {
+  const gym = data.gym.find(g => g.id === id);
+  if(!gym) return;
+  document.getElementById('gymDate').value = gym.date;
+  document.getElementById('gymWhat').value = gym.what;
+  document.getElementById('gymSteps').value = gym.steps;
+  data.gym = data.gym.filter(g => g.id !== id);
+  save();
+  toast('Editing session...');
+}
+
+function deleteGym(id) {
+  if(!confirm('Delete?')) return;
+  data.gym = data.gym.filter(g => g.id !== id);
+  save(); calculateStreak(); toast('Deleted');
+  renderGymStats();
+  renderDashboard();
+}
+
+// DIET
+let pendingMeal = null;
+
+async function analyseMeal() {
+  const desc = document.getElementById('mealDescription').value.trim();
+  if(!desc) { toast('Describe your meal'); return; }
+  
+  const apiKey = localStorage.getItem('anthropic_api_key');
+  if(!apiKey) { toast('Set API key in Profile'); navigate('profile'); return; }
+  
+  toast('✨ Analysing your meal...');
+  document.querySelector('[onclick="analyseMeal()"]').disabled = true;
+  
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        system: 'You are a nutrition expert. Analyze the meal description and return ONLY a JSON object with: {"calories": number, "protein": number, "carbs": number, "fats": number, "fibre": number}. Be accurate based on quantities mentioned.',
+        messages: [{ role: 'user', content: `Analyze this meal: "${desc}". Return ONLY JSON no markdown.` }]
+      })
+    });
+    
+    if(!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error?.message || `API error: ${response.status}`);
+    }
+    const result = await response.json();
+    const text = result.content[0].text;
+    const json = JSON.parse(text.replace(/```json|```/g, '').trim());
+    
+    pendingMeal = {
+      name: desc.split('+')[0].trim(),
+      desc, cal: Math.round(json.calories || 0),
+      protein: Math.round(json.protein || 0),
+      carbs: Math.round(json.carbs || 0),
+      fats: Math.round(json.fats || 0),
+      fibre: Math.round(json.fibre || 0)
+    };
+    
+    document.getElementById('previewCal').textContent = pendingMeal.cal;
+    document.getElementById('previewProtein').textContent = pendingMeal.protein + 'g';
+    document.getElementById('previewCarbs').textContent = pendingMeal.carbs + 'g';
+    document.getElementById('previewFats').textContent = pendingMeal.fats + 'g';
+    document.getElementById('aiPreview').style.display = 'block';
+    toast('✅ Meal analysed!');
+    
+  } catch(e) {
+    console.error('Analysis error:', e);
+    toast('❌ ' + e.message);
+  }
+  document.querySelector('[onclick="analyseMeal()"]').disabled = false;
+}
+
+function confirmMeal() {
+  if(!pendingMeal) return;
+  const date = new Date().toISOString().split('T')[0];
+  const type = document.getElementById('mealType').value;
+  data.meals.push({ id: Date.now(), date, type, ...pendingMeal });
+  save(); calculateStreak(); toast('Meal saved! 🥗');
+  
+  document.getElementById('mealDescription').value = '';
+  document.getElementById('aiPreview').style.display = 'none';
+  pendingMeal = null;
+  
+  renderDietStats();
+  renderDashboard();
+}
+
+function addWater() {
+  const amount = parseFloat(document.getElementById('waterAmount').value);
+  if(!amount || amount <= 0) { toast('Enter amount'); return; }
+  
+  const date = new Date().toISOString().split('T')[0];
+  data.water.push({ date, liters: amount, id: Date.now() });
+  
+  save(); toast('Water logged! 💧');
+  document.getElementById('waterAmount').value = '';
+  renderDietStats();
+  renderDashboard();
+}
+
+function viewMeals() {
+  const date = document.getElementById('mealDate').value;
+  if(!date) return;
+  
+  const meals = data.meals.filter(m => m.date === date);
+  const cal = meals.reduce((s, m) => s + m.cal, 0);
+  
+  const html = meals.map(m => `
+    <div class="list-item">
+      <div class="list-icon list-icon-diet">🥗</div>
+      <div class="list-body">
+        <div class="list-title">${m.name} <span class="tag tag-diet">${m.type}</span></div>
+        <div class="list-sub">${m.cal}kcal · P:${m.protein}g C:${m.carbs}g F:${m.fats}g</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm" onclick="editMeal(${m.id})">Edit</button>
+        <button class="btn btn-delete btn-sm" onclick="deleteMeal(${m.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('mealHistory').innerHTML = html || '<div style="color:var(--text-soft);text-align:center;padding:20px 0">No meals on this date</div>';
+}
+
+function editMeal(id) {
+  const meal = data.meals.find(m => m.id === id);
+  if(!meal) return;
+  
+  document.getElementById('mealDescription').value = meal.desc;
+  document.getElementById('mealType').value = meal.type;
+  pendingMeal = meal;
+  
+  document.getElementById('previewCal').textContent = meal.cal;
+  document.getElementById('previewProtein').textContent = meal.protein + 'g';
+  document.getElementById('previewCarbs').textContent = meal.carbs + 'g';
+  document.getElementById('previewFats').textContent = meal.fats + 'g';
+  document.getElementById('aiPreview').style.display = 'block';
+  
+  data.meals = data.meals.filter(m => m.id !== id);
+  save();
+  toast('Editing meal...');
+}
+
+function deleteMeal(id) {
+  if(!confirm('Delete?')) return;
+  data.meals = data.meals.filter(m => m.id !== id);
+  save(); calculateStreak(); toast('Deleted');
+  viewMeals();
+  renderDashboard();
+}
+
+function renderDietStats() {
+  const today = new Date().toISOString().split('T')[0];
+  const water = data.water.filter(w => w.date === today).reduce((s, w) => s + w.liters, 0);
+  document.getElementById('totalWater').textContent = water.toFixed(2) + 'L';
+}
+
+// CALENDAR
+let calYear, calMonth;
+function initCal() {
+  const now = new Date();
+  calYear = now.getFullYear(); calMonth = now.getMonth();
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if(calMonth > 11) { calMonth = 0; calYear++; }
+  if(calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  if(calYear === undefined) initCal();
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonthLabel').textContent = `${months[calMonth]} ${calYear}`;
+  
+  const grid = document.getElementById('calendarGrid');
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let html = days.map(d => `<div class="cal-day-label">${d}</div>`).join('');
+  
+  const first = new Date(calYear, calMonth, 1);
+  const startDay = (first.getDay() + 6) % 7;
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date().toISOString().split('T')[0];
+  
+  for(let i=0;i<startDay;i++) html += '<div class="cal-day empty"></div>';
+  
+  for(let d=1;d<=daysInMonth;d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const hasRun = data.runs.some(r => r.date === dateStr);
+    const hasGym = data.gym.some(g => g.date === dateStr);
+    const isCheat = data.cheatDays.includes(dateStr);
+    const isToday = dateStr === today;
+    
+    let cls = 'cal-day';
+    if(isToday) cls += ' today';
+    else if(hasRun || hasGym) cls += ' has-activity';
+    if(isCheat) cls += ' has-cheat';
+    
+    const icons = (hasRun ? '🏃' : '') + (hasGym ? '🏋️' : '') + (isCheat ? '🍕' : '');
+    html += `<div class="${cls}">
+      ${d}
+      ${icons ? `<div class="cal-icons">${icons}</div>` : ''}
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function updateCheatDayStatus() {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const isToday = data.cheatDays.includes(today);
+  // Add cheat day status updates if needed
+}
+
+function savePlan() {
+  const date = document.getElementById('planDate').value;
+  const type = document.getElementById('planType').value.split(' ')[0];
+  const notes = document.getElementById('planNotes').value;
+  if(!date) { toast('Select date'); return; }
+  
+  data.plans.push({ id: Date.now(), date, type, notes });
+  save(); toast('Plan saved! 📅');
+  
+  document.getElementById('planDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('planNotes').value = '';
+  
+  renderCalendar();
+  renderPlansList();
+}
+
+function renderPlansList() {
+  const html = [...data.plans].reverse().slice(0, 10).map(p => `
+    <div class="list-item">
+      <div class="list-body">
+        <div class="list-title">${p.type}</div>
+        <div class="list-sub">${p.date}${p.notes ? ' · ' + p.notes : ''}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm" onclick="editPlan(${p.id})">Edit</button>
+        <button class="btn btn-delete btn-sm" onclick="deletePlan(${p.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('plansList').innerHTML = html || '<div style="color:var(--text-soft);text-align:center;padding:20px 0">No plans</div>';
+}
+
+function editPlan(id) {
+  const plan = data.plans.find(p => p.id === id);
+  if(!plan) return;
+  document.getElementById('planDate').value = plan.date;
+  document.getElementById('planType').value = plan.type + ' ' + (plan.type === 'Gym' ? '🏋️' : plan.type === 'Run' ? '🏃' : plan.type === 'Cheat Day' ? '🍕' : '📅');
+  document.getElementById('planNotes').value = plan.notes;
+  data.plans = data.plans.filter(p => p.id !== id);
+  save();
+  toast('Editing plan...');
+}
+
+function deletePlan(id) {
+  if(!confirm('Delete?')) return;
+  data.plans = data.plans.filter(p => p.id !== id);
+  save(); toast('Deleted');
+  renderCalendar();
+  renderPlansList();
+}
+
+// RECORDS
+function savePR() {
+  const type = document.getElementById('prType').value;
+  const value = document.getElementById('prValue').value;
+  const date = document.getElementById('prDate').value;
+  if(!value) { toast('Enter value'); return; }
+  
+  data.prs = data.prs.filter(p => p.name !== type);
+  data.prs.push({ id: Date.now(), name: type, value, date, emoji: prEmojis[type] || '⭐' });
+  
+  save(); toast('PR saved! 🏅');
+  document.getElementById('prValue').value = '';
+  renderPRs();
+  renderDashboard();
+}
+
+function renderPRs() {
+  const html = data.prs.map(p => `
+    <div class="stat-card" style="text-align:center;padding:20px">
+      <div style="font-size:28px;margin-bottom:8px">${p.emoji}</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px">${p.value}</div>
+      <div style="font-size:11px;color:var(--text-soft);text-transform:uppercase;margin-bottom:12px">${p.name}</div>
+      <div style="display:flex;gap:6px;justify-content:center;margin-top:8px">
+        <button class="btn btn-primary btn-sm" onclick="editPR(${p.id})">Edit</button>
+        <button class="btn btn-delete btn-sm" onclick="deletePR(${p.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('prCards').innerHTML = html || '<div style="grid-column:1/-1;color:var(--text-soft);text-align:center;padding:24px 0">No PRs yet</div>';
+}
+
+function editPR(id) {
+  const pr = data.prs.find(p => p.id === id);
+  if(!pr) return;
+  document.getElementById('prType').value = pr.name;
+  document.getElementById('prValue').value = pr.value;
+  document.getElementById('prDate').value = pr.date;
+  data.prs = data.prs.filter(p => p.id !== id);
+  save();
+  toast('Editing PR...');
+}
+
+function deletePR(id) {
+  if(!confirm('Delete?')) return;
+  data.prs = data.prs.filter(p => p.id !== id);
+  save(); toast('Deleted');
+  renderPRs();
+  renderDashboard();
+}
+
+// PROFILE
+function calcTDEE() {
+  const weight = parseFloat(document.getElementById('profWeight').value) || 0;
+  const height = parseFloat(document.getElementById('profHeight').value) || 0;
+  const age = parseInt(document.getElementById('profAge').value) || 25;
+  const activity = parseFloat(document.getElementById('profActivity').value) || 1.55;
+  const goal = document.getElementById('profGoal').value;
+  
+  if(!weight || !height) {
+    document.getElementById('calculatedTDEE').textContent = '()';
+    document.getElementById('tdeeBreakdown').textContent = 'Enter your details to calculate';
+    return;
+  }
+  
+  const bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+  let tdee = Math.round(bmr * activity);
+  let text = '';
+  
+  if(goal === 'bulk') tdee += 400, text = 'Bulking (+400)';
+  else if(goal === 'shred') tdee -= 400, text = 'Shredding (-400)';
+  else text = 'Maintenance';
+  
+  document.getElementById('calculatedTDEE').textContent = tdee;
+  document.getElementById('tdeeBreakdown').textContent = `BMR: ${Math.round(bmr)} kcal • ${text}`;
+  document.getElementById('profCal').value = tdee;
+}
+
+function saveProfile() {
+  data.profile = {
+    weight: document.getElementById('profWeight').value,
+    height: document.getElementById('profHeight').value,
+    age: document.getElementById('profAge').value,
+    calTarget: parseInt(document.getElementById('profCal').value) || 2518,
+    cheatCalLimit: parseInt(document.getElementById('profCheatCal').value) || 3200,
+    dietCalLimit: parseInt(document.getElementById('profDietCal').value) || 2518,
+    goalDesc: document.getElementById('profileGoalDesc').value
+  };
+  save(); toast('Profile saved! ✅');
+}
+
+function handlePhotoUpload(input, type) {
+  const file = input.files[0];
+  if(!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    data.photos[type] = e.target.result;
+    save();
+    
+    if(type === 'current') {
+      document.getElementById('currentPhoto').src = e.target.result;
+      document.getElementById('currentPhotoPreview').style.display = 'block';
+      document.getElementById('currentPhotoText').style.display = 'none';
+    } else {
+      document.getElementById('desiredPhoto').src = e.target.result;
+      document.getElementById('desiredPhotoPreview').style.display = 'block';
+      document.getElementById('desiredPhotoText').style.display = 'none';
+    }
+    
+    toast('Photo uploaded! 📸');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeBodyComposition() {
+  if(!data.photos.current) { toast('Upload current photo'); return; }
+  
+  const apiKey = localStorage.getItem('anthropic_api_key');
+  if(!apiKey) { toast('Set API key first'); navigate('profile'); return; }
+  
+  toast('🔍 Analysing...');
+  
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: data.photos.current.split(',')[1] } },
+            { type: 'text', text: 'Analyze this photo and estimate body fat percentage. Based on their weight and height (check profile), give your assessment. Return ONLY: "Estimated body fat: X%" in 1 line.' }
+          ]
+        }]
+      })
+    });
+    
+    if(!response.ok) throw new Error('API error');
+    const result = await response.json();
+    const text = result.content[0].text;
+    
+    document.getElementById('bodyAnalysisResult').innerHTML = `<strong>📊 Analysis:</strong> ${text}`;
+    document.getElementById('bodyAnalysisResult').style.display = 'block';
+    toast('✅ Analysis complete!');
+    
+  } catch(e) {
+    toast('❌ Analysis failed: ' + e.message);
+  }
+}
+
+function saveAPIKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  if(!key) { toast('Enter key'); return; }
+  localStorage.setItem('anthropic_api_key', key);
+  document.getElementById('apiKey').value = '';
+  toast('API key saved! 🔐');
+}
+
+init();
+initCal();
+</script>
+
+</body>
+</html>
