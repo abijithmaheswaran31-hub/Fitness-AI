@@ -1206,7 +1206,10 @@ async function analyseMeal() {
     if(!response.ok) throw new Error('API error');
     
     const result = await response.json();
-    const text = result.content[0].text;
+    const text =
+  result?.content?.[0]?.text ||
+  result?.error?.message ||
+  JSON.stringify(result);
     const json = JSON.parse(text.replace(/```json|```/g, '').trim());
     
     pendingMeal = {
