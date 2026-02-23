@@ -1188,7 +1188,7 @@ async function analyseMeal() {
   document.querySelector('[onclick="analyseMeal()"]').disabled = true;
   
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/api/analyse', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json', 
@@ -1550,7 +1550,7 @@ async function analyzeBodyComposition() {
   toast('🔍 Analysing...');
   
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/api/analyse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
       body: JSON.stringify({
